@@ -12,7 +12,7 @@ llm = ChatOpenAI(
     model="mistralai/mistral-7b-instruct",
     openai_api_key=os.environ["OPENROUTER_API_KEY"],
     openai_api_base="https://openrouter.ai/api/v1",
-    temperature=0.7,
+    temperature=0.5,
     max_tokens=1024
 )
 
@@ -35,7 +35,7 @@ class CrewaiConversationalChatbotCrew:
         return Agent(
             config=self.agents_config["assistant"],
             llm=llm,
-            memory=memory,
+            memory=True,
             verbose=False,
         )
 

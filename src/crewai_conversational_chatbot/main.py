@@ -38,8 +38,8 @@ def run():
     print("I’m here to answer your questions. But first tell me a bit about yourself.")
     print("1. I'm a Brand")
     print("2. I'm a Creator")
-    print("3. Book a demo for me")
-    print("4. Schedule a meeting for me")
+    print("3. Schedule a demo")
+    print("4. Create a project")
 
     while True:
         user_input = input("You: ")
@@ -47,7 +47,7 @@ def run():
             print("Assistant: Goodbye! It was nice talking to you.")
             break
 
-        if user_input.strip() == "4" or "schedule a meeting" in user_input.lower():
+        if user_input.strip() == "3" or "schedule a meeting" in user_input.lower():
             email = input("Assistant: Sure! Please enter your email address: ")
             send_meeting_email(email)
             continue

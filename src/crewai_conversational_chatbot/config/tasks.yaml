@@ -5,5 +5,5 @@ assistant_task:
     
     Respond to the user's message: {user_message}. Use the provided conversation history: {context}
   expected_output: >
-    Provide an accurate, friendly, and brand-aligned reply that highlights Cohyve’s strengths,
+    Provide an accurate, very concise, friendly, and brand-aligned reply that highlights Cohyve’s strengths,
     services, and offerings — positioning you as a Cohyve expert.
