@@ -102,13 +102,32 @@ Project Brief:
             raise SystemExit(0)
         return val
 
-    # --- Always ask for must-have fields if missing or not explicit in the brief ---
-    must_have_fields = [
+    # Define generic/placeholder values for each field
+    GENERIC_VALUES = {
+        'service': {'none', 'n/a', 'service', 'design', 'graphic design', 'project'},
+        'subservice': {'none', 'n/a', 'subservice', 'project'},
+        'style': {'none', 'n/a', 'style', 'modern', 'clean', 'simple', 'basic', 'default'},
+        'application': {'none', 'n/a', 'application', 'digital', 'print', 'web', 'app'},
+        'name': {'none', 'n/a', 'name', 'project', 'untitled'},
+        'deadline': {'none', 'n/a', 'deadline'},
+        'type': {'none', 'n/a', 'type', 'project'},
+        'description': {'none', 'n/a', 'description', 'project'},
+        'expertise': {'none', 'n/a', 'expertise', 'any'},
+        'budget': {'none', 'n/a', 'budget', 'any'},
+    }
+
+    # List of all important fields to check
+    important_fields = [
+        ('service', 'What is the main service? (e.g., web design, advertising design, ui/ux design)'),
+        ('subservice', 'What is the subservice? (e.g., landing pages, marketing websites, portfolio sites, web templates)'),
+        ('style', 'What style do you prefer? (e.g., clean, grid-based, animation-heavy)'),
+        ('application', 'What is the application/use-case? (e.g., creative portfolios)'),
         ('name', 'What is the project name?'),
         ('deadline', 'What is the deadline?'),
         ('type', 'Is this a one-time or recurring project?'),
+        ('description', 'Please provide a short project description'),
         ('expertise', 'What level of creator do you want? (fresher, beginner, experienced, pro)'),
-        ('budget', 'What is your budget?(5000, 10000, 15000, 20000)' )
+        ('budget', 'What is your budget?(5000, 10000, 15000, 20000)')
     ]
 
     from datetime import datetime as dt
@@ -117,11 +136,10 @@ Project Brief:
     def is_explicit(field, value):
         return value and value.lower() in brief.lower()
 
-    for field, prompt in must_have_fields:
-        val = extracted.get(field, '')
-        if not is_explicit(field, val):
-            val = ''
-        if not val:
+    for field, prompt in important_fields:
+        val = project.get(field, '')
+        # Check for empty or generic/placeholder value
+        if not val or (field in GENERIC_VALUES and val.strip().lower() in GENERIC_VALUES[field]):
             val = safe_input(f"Assistant: {prompt} ")
             # For deadline, normalize to DD-MM-YYYY if needed
             if field == 'deadline' and val:
@@ -134,7 +152,7 @@ Project Brief:
                         val = date_match.group(1)
                     else:
                         val = norm_resp
-            # For budget, normalize to numericals in rupees
+            # For budget, normalize to numericals in rupees /-
             if field == 'budget' and val:
                 norm_prompt = f"Convert this budget to a numeric value in rupees (INR). Only return the number. Budget: {val}"
                 norm_resp = llm.invoke(norm_prompt).content.strip()
@@ -144,7 +162,7 @@ Project Brief:
                     val = num_match.group(0)
                 else:
                     val = norm_resp
-        project[field] = val
+            project[field] = val
         # If deadline is present but not in DD-MM-YYYY, normalize it
         if field == 'deadline' and project[field]:
             import re
@@ -205,13 +223,17 @@ Project Details (JSON):
 {json.dumps(project, indent=2)}
 """
     prd_md = llm.invoke(prd_prompt).content
+    # --- Save PRD in a 'PRDs' folder in the workspace root ---
+    prd_dir = os.path.join(os.getcwd(), 'PRDs')
+    if not os.path.exists(prd_dir):
+        os.makedirs(prd_dir)
     prd_filename = f"PRD_{project['name'].replace(' ', '_')}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
-    prd_path = os.path.join(os.getcwd(), prd_filename)
+    prd_path = os.path.join(prd_dir, prd_filename)
     with open(prd_path, 'w', encoding='utf-8') as f:
         f.write(prd_md)
     print(f"\nAssistant: PRD generated and saved as {prd_path}\n")
 
-# --- End Project Creation CLI Flow (LLM-Enhanced) ---
+# --- End Project Creation CLI Flow
 
 def run():
     crew_instance = CrewaiConversationalChatbotCrew()
